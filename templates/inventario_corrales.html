@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario por Corral - El Rosario</title>
+    <style>
+        body { 
+            background-color: #000; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            margin: 0;
+        }
+
+        .btn-back { 
+            color: #aaa; 
+            text-decoration: none; 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            transition: 0.3s;
+        }
+        .btn-back:hover { color: #2ecc71; }
+
+        /* Contenedor del Buscador */
+        .search-container { 
+            margin-bottom: 30px; 
+            display: flex; 
+            gap: 10px; 
+        }
+        .search-input { 
+            padding: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #333; 
+            background: #111; 
+            color: white; 
+            width: 350px; 
+        }
+        .btn-search { 
+            background: #2ecc71; 
+            color: black; 
+            font-weight: bold; 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: 0.3s;
+        }
+        .btn-search:hover { background: #27ae60; }
+
+        /* Cuadrícula interactiva estilo Arribo */
+        .grid-corrales { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+            gap: 20px; 
+        }
+        
+        .corral-card { 
+            background: #111; 
+            border: 1px solid #2ecc71; 
+            border-radius: 10px; 
+            padding: 15px; 
+            position: relative;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .corral-card:hover {
+            transform: translateY(-5px);
+            background: #161616;
+        }
+
+        .corral-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #222; 
+            padding-bottom: 8px; 
+            margin-bottom: 10px; 
+        }
+        
+        /* Etiquetas de Modalidad Comercial (Estilo Arribo) */
+        .badge-tipo { 
+            font-size: 0.75em; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            color: black; 
+            text-transform: uppercase;
+        }
+
+        .badge-etapa {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+            color: black;
+            display: inline-block;
+        }
+
+        .info-row { margin-bottom: 8px; font-size: 0.95em; }
+        .label-muted { color: #aaa; font-size: 0.9em; }
+
+        /* Zona de Seguridad */
+        .danger-zone { 
+            margin-top: 60px; 
+            border: 1px solid #e74c3c; 
+            padding: 25px; 
+            border-radius: 12px; 
+            background: #1a0505; 
+        }
+        .danger-title { color: #e74c3c; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        .danger-input { 
+            padding: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #444; 
+            background: #222; 
+            color: white; 
+            margin-bottom: 15px; 
+            width: 100%; 
+            box-sizing: border-box;
+        }
+        .btn-delete { 
+            background: #e74c3c; 
+            color: white; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-weight: bold; 
+            font-size: 1em;
+            transition: 0.3s;
+        }
+        .btn-delete:hover { background: #c0392b; }
+
+        .flash-msg {
+            background: #f1c40f;
+            color: black;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/dashboard" class="btn-back">← Volver al Panel Administrativo</a>
+
+    <h1>📋 Inventario de Corrales Activos</h1>
+    <p style="color: #888; margin-bottom: 25px;">Se muestran únicamente los lotes de ganado que se encuentran actualmente en producción.</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash-msg">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- 1. Buscador dinámico -->
+    <div class="search-container">
+        <form action="/inventario/buscar" method="GET" class="search-container">
+            <input type="text" name="q" class="search-input" placeholder="Buscar por Arete o Proveedor..." required>
+            <button type="submit" class="btn-search">BUSCAR</button>
+        </form>
+    </div>
+
+    <!-- 2. Cuadrícula de Corrales Dinámicos (Clon de diseño Arribo) -->
+    <div class="grid-corrales">
+    {% for c in corrales %}
+        <a href="/inventario/corral/{{ c.id }}" class="corral-card">
+            <div class="corral-header">
+                <strong style="color: #2ecc71; font-size: 1.1em;">Corral {{ c.id }}</strong>
+                <!-- Etiqueta de Lote o Abasto con los colores del arribo -->
+                <span class="badge-tipo" style="background: {{ '#27ae60' if c.tipo_venta == 'LOTE' else '#f1c40f' }};">
+                    {{ c.tipo_venta }}
+                </span>
+            </div>
+            
+            <div class="info-row" style="margin-bottom: 12px;">
+                <span class="label-muted">Estado:</span> 
+                <span class="badge-etapa" style="background: 
+                    {% if c.etapa_actual == 'INICIO' %}#3498db
+                    {% elif c.etapa_actual == 'DESARROLLO' %}#f1c40f
+                    {% else %}#e67e22{% endif %};">
+                    {{ c.etapa_actual }}
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="label-muted">Ganado:</span> 
+                <strong>{{ c.ocupados }} / {{ c.capacidad_max }} cabezas</strong>
+            </div>
+
+            <div style="font-size: 0.85em; color: #888; margin-top: auto; padding-top: 10px; border-top: 1px solid #222;">
+                Origen: <b>{{ c.procedencia_actual }}</b> <br>
+                Sexo: <b>{{ 'Machos (♂)' if c.genero_actual == 'M' else 'Hembras (♀)' }}</b>
+            </div>
+        </a>
+    {% else %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #555; font-style: italic; background: #111; border-radius: 10px; border: 1px solid #222;">
+            ⚠️ No hay ganado registrado en el inventario activo actualmente.
+        </div>
+    {% endfor %}
+    </div>
+
+    <!-- 3. Zona de Borrado Seguro -->
+    {% if session.get('rol') == 'dueño' %}
+    <div class="danger-zone">
+        <h3 class="danger-title">⚠️ Zona de Borrado Crítico</h3>
+        <p>Esta acción eliminará todos los animales del inventario y reseteará los precios de los corrales. Ingrese sus credenciales para confirmar:</p>
+        
+        <form action="/limpiar_seguro" method="POST" onsubmit="return confirm('¿Está COMPLETAMENTE SEGURO? Esta operación es irreversible y limpiará todos los registros de animales y precios.');">
+            <input type="email" name="correo_verificar" class="danger-input" placeholder="Confirmar Correo de Administrador" required>
+            <input type="password" name="pass_verificar" class="danger-input" placeholder="Confirmar Contraseña" required>
+            <button type="submit" class="btn-delete">BORRAR TODO EL INVENTARIO Y PRECIOS</button>
+        </form>
+    </div>
+    {% endif %}
+
+</body>
+</html>

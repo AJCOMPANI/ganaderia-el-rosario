@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Control de Operaciones - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        
+        /* Estilos de Secciones */
+        .form-section { background: #111; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #222; }
+        .form-section h3 { margin-top: 0; color: #2ecc71; text-transform: uppercase; font-size: 0.9em; }
+        
+        input, select { padding: 10px; margin-right: 5px; border-radius: 4px; border: 1px solid #333; background: #222; color: white; }
+        .btn-add { background-color: #2ecc71; color: black; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-assign { background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        /* Estilos de Tabla */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #111; }
+        th, td { border: 1px solid #333; padding: 12px; text-align: left; }
+        th { background-color: #1a1a1a; color: #2ecc71; text-transform: uppercase; font-size: 0.8em; }
+
+        /* Estilos del Semáforo */
+        .grid-semaforo { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card-tarea { background: #161616; padding: 15px; border-radius: 8px; position: relative; border: 1px solid #333; }
+        
+        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .rojo { background-color: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
+        .amarillo { background-color: #f1c40f; box-shadow: 0 0 10px #f1c40f; }
+        .verde { background-color: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+
+        .btn-back { color: #aaa; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .btn-back:hover { color: #2ecc71; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard" class="btn-back">← Volver al Panel</a>
+        
+        <h1>Gestión de Personal y Tareas</h1>
+
+        <hr style="margin: 40px 0; border: 0; border-top: 1px solid #222;">
+
+        <div class="form-section">
+            <h3>👥 Registrar Nuevo Usuario</h3>
+            <form action="/empleados/agregar" method="POST">
+                <input type="email" name="correo" placeholder="Correo electrónico" required>
+                <input type="password" name="password" placeholder="Contraseña" required>
+                <select name="rol" required>
+                    <option value="empleado">Trabajador (Operativo)</option>
+                    <option value="dueño">Administrador (Dueño)</option>
+                </select>
+                <button type="submit" class="btn-add">REGISTRAR</button>
+            </form>
+        </div>
+
+        <h3>Lista de Personal Registrado</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Correo Electrónico</th>
+                    <th>Nivel de Acceso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in empleados %}
+                <tr>
+                    <td>{{ emp.id }}</td>
+                    <td>{{ emp.correo }}</td>
+                    <td>
+                        {% if emp.rol == 'dueño' %}
+                            <span style="color: #2ecc71;">👑 Administrador</span>
+                        {% else %}
+                            <span style="color: #3498db;">👤 Trabajador</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/empleados/eliminar/{{ emp.id }}" 
+                           style="color: #e74c3c; text-decoration: none; font-size: 0.9em;"
+                           onclick="return confirm('¿Eliminar acceso a {{ emp.correo }}?')">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

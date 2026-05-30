@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Ventas - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        .btn-back { color: #2ecc71; text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold; }
+        .btn-back:hover { text-decoration: underline; }
+        table { width: 100%; border-collapse: collapse; background: #111; margin-top: 20px; border: 1px solid #333; }
+        th, td { padding: 15px; border: 1px solid #333; text-align: left; }
+        th { color: #2ecc71; background-color: #1a1a1a; font-size: 1em; text-transform: uppercase; }
+        tr:hover { background-color: #161616; }
+        .badge { padding: 5px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+        .badge-lote { background-color: #3498db; color: white; }
+        .badge-abasto { background-color: #9b59b6; color: white; }
+        .monto { color: #2ecc71; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard" class="btn-back">← Volver al Panel</a>
+        <h1>📋 Historial de Ventas Históricas</h1>
+        <p style="color: #888;">Registro detallado de salidas y comercialización de ganado.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Venta</th>
+                    <th>Fecha / Hora</th>
+                    <th>Modalidad</th>
+                    <th>Origen / Corral</th>
+                    <th>Descripción / Aretes</th>
+                    <th>Total Recaudado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in ventas %}
+                <tr>
+                    <td>#{{ v.id }}</td>
+                    <td>{{ v.fecha }}</td>
+                    <td>
+                        <span class="badge {% if v.modalidad == 'LOTE' %}badge-lote{% else %}badge-abasto{% endif %}">
+                            {{ v.modalidad }}
+                        </span>
+                    </td>
+                    <td>{% if v.corral_id %}Corral {{ v.corral_id }}{% else %}N/A (Abasto){% endif %}</td>
+                    <td>{{ v.detalles if v.detalles else 'Sin detalles registrados' }}</td>
+                    <td class="monto">${{ "{:,.2f}".format(v.total_venta) }} MXN</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #666; font-style: italic;">No se han registrado ventas en el sistema todavía.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if session['rol'] == 'dueño' %}Historial de Labores - El Rosario{% else %}Mis Labores - El Rosario{% endif %}</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .btn-back { color: #aaa; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .btn-back:hover { color: #2ecc71; }
+        
+        /* Contenedor del formulario (Captura image_28c741.png)[cite: 12] */
+        .form-section { 
+            background: #111; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 30px; 
+            border: 1px solid #3498db; 
+        }
+        .form-section h3 { margin-top: 0; color: #2ecc71; text-transform: uppercase; font-size: 0.9em; display: flex; align-items: center; gap: 5px; }
+        .form-inline { display: flex; gap: 10px; }
+        
+        input, select { padding: 12px; border-radius: 6px; border: 1px solid #333; background: #222; color: white; box-sizing: border-box; }
+        .btn-assign { background-color: #3498db; color: white; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .btn-assign:hover { background-color: #2980b9; }
+
+        /* Estilos de las tarjetas de historial[cite: 3] */
+        .card-tarea { 
+            background: #111; 
+            border: 1px solid #333; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .info h3 { margin: 0 0 8px 0; color: #fff; font-size: 1.1em; }
+        .meta-info { font-size: 0.85em; color: #888; margin-top: 5px; }
+        .badge { padding: 5px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        
+        .status-ROJO { background: #e74c3c; color: white; }      
+        .status-AMARILLO { background: #f1c40f; color: black; } 
+        .status-VERDE { background: #2ecc71; color: black; }    
+
+        .btn-accion { padding: 10px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 0.9em; transition: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard" class="btn-back">← Volver al Panel</a>
+        
+        {% if session['rol'] == 'dueño' %}
+            <!-- BLOQUE AGREGADO: Formulario directo desde Supervisar Tareas[cite: 12] -->
+            <div class="form-section">
+                <h3>🚀 ASIGNAR NUEVA LABOR (SEMÁFORO)</h3>
+                <form action="/tareas/crear" method="POST" class="form-inline">
+                    <select name="empleado_id" required style="flex: 1;">
+                        <option value="" disabled selected>Seleccionar Empleado...</option>
+                        {% for emp in empleados %}
+                            {% if emp.rol == 'empleado' %}
+                                <option value="{{ emp.id }}">{{ emp.correo }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="descripcion" placeholder="Descripción de la tarea (Ej: Limpiar Corral 5)" required style="flex: 2;">
+                    <button type="submit" class="btn-assign">ASIGNAR TAREA</button>
+                </form>
+            </div>
+
+            <h1>📋 Historial General de Tareas (Supervisión)</h1>
+            <p style="color: #888; margin-bottom: 25px;">Registro cronológico de todas las actividades creadas en el sistema.</p>
+        {% else %}
+            <h1>Mis Tareas Asignadas</h1>
+            <p style="color: #2ecc71; font-weight: bold; margin-bottom: 25px;">
+                📅 Labores del día: <span id="fecha-hoy"></span>
+            </p>
+            <script>
+                const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-ES', opciones);
+            </script>
+        {% endif %}
+
+        {% for t in tareas %}
+        <div class="card-tarea" style="border-left: 5px solid {% if t.estado == 'ROJO' %}#e74c3c{% elif t.estado == 'AMARILLO' %}#f1c40f{% else %}#2ecc71{% endif %};">
+            <div class="info">
+                <h3>{{ t.descripcion }}</h3>
+                
+                <span class="badge status-{{ t.estado }}">
+                    {{ 'Pendiente' if t.estado == 'ROJO' else 'En curso' if t.estado == 'AMARILLO' else 'Completada' }}
+                </span>
+
+                <div class="meta-info">
+                    {% if session['rol'] == 'dueño' %}
+                        👤 <strong>Asignado a:</strong> {{ t.correo }} <br>
+                    {% endif %}
+                    📅 <strong>Fecha de registro:</strong> {{ t.fecha_creacion }}
+                </div>
+            </div>
+
+            <div class="acciones">
+                {% if session['rol'] == 'dueño' %}
+                    <span style="font-weight: bold; font-size: 0.9em; color: {% if t.estado == 'ROJO' %}#e74c3c{% elif t.estado == 'AMARILLO' %}#f1c40f{% else %}#2ecc71{% endif %};">
+                        {{ '🔴 EN ESPERA' if t.estado == 'ROJO' else '🟡 TRABAJANDO' if t.estado == 'AMARILLO' else '✅ TERMINADA' }}
+                    </span>
+                {% else %}
+                    {% if t.estado == 'ROJO' %}
+                        <a href="/tareas/estado/{{ t.id }}/AMARILLO" class="btn-accion" style="background: #f1c40f; color: black;">EMPEZAR LABOR</a>
+                    {% elif t.estado == 'AMARILLO' %}
+                        <a href="/tareas/estado/{{ t.id }}/VERDE" class="btn-accion" style="background: #2ecc71; color: black;">MARCAR COMO TERMINADA</a>
+                    {% else %}
+                        <span style="color: #2ecc71; font-weight: bold;">✅ COMPLETADA</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+            <p style="text-align: center; color: #666; margin-top: 50px;">No se registran tareas en este apartado por ahora.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

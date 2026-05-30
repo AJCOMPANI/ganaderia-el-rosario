@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel - Ganadería El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #222; }
+        .header h3 { margin: 0; text-transform: uppercase; font-weight: lighter; }
+        .btn-logout { color: #e74c3c; text-decoration: none; font-size: 0.8em; font-weight: bold; border: 1px solid #e74c3c; padding: 8px 15px; border-radius: 5px; transition: 0.3s; }
+        .btn-logout:hover { background: #e74c3c; color: white; }
+
+        /* CONTENEDOR PRINCIPAL - Cuadrícula de 3 columnas fijas */
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 25px; 
+            max-width: 1100px; 
+            margin: 50px auto; 
+        }
+
+        /* TARJETAS - Tamaño uniforme */
+        .card { 
+            background: #111; 
+            border: 1px solid #333; 
+            height: 200px; /* Altura fija para uniformidad */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card:hover { 
+            background: #1a1a1a; 
+            border-color: #2ecc71; 
+            transform: translateY(-5px);
+        }
+
+        .icon { font-size: 50px; margin-bottom: 15px; }
+        .text { font-weight: bold; font-size: 0.85em; letter-spacing: 1px; text-transform: uppercase; }
+
+        h2 { text-align: center; margin-top: 50px; font-weight: lighter; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h3>
+            {% if rol == 'dueño' %}
+                👑 ADMINISTRADOR: <span style="color: #2ecc71;">EL ROSARIO</span>
+            {% else %}
+                👤 TRABAJADOR: <span style="color: #2ecc71;">EL ROSARIO</span>
+            {% endif %}
+        </h3>
+        <a href="/logout" class="btn-logout">CERRAR SESIÓN</a>
+    </div>
+
+    <h2>¿Qué desea gestionar hoy?</h2>
+
+    <div class="grid-container">
+        
+        {% if rol == 'dueño' %}
+        <div class="card" onclick="window.location.href='/empleados'">
+            <div class="icon">👥</div>
+            <div class="text">CONTROL DE EMPLEADOS</div>
+        </div>
+        {% endif %}
+
+        <div class="card" onclick="window.location.href='/arribo'">
+            <div class="icon">🚚</div>
+            <div class="text">REGISTRAR ARRIBO</div>
+        </div>
+
+        <div class="card" onclick="window.location.href='/inventario'">
+            <div class="icon">🐄</div>
+            <div class="text">INVENTARIO ANIMAL</div>
+        </div>
+
+        <div class="card" onclick="window.location.href='/bodega'">
+            <div class="icon">📦</div>
+            <div class="text">INVENTARIO BODEGA</div>
+        </div>
+        
+        {% if rol == 'dueño' %}
+        <div class="card" onclick="window.location.href='/mis_tareas'">
+            <div class="icon">📋</div>
+            <div class="text">SUPERVISAR TAREAS</div>
+        </div>
+        {% else %}
+        <div class="card" onclick="window.location.href='/mis_tareas'">
+            <div class="icon">📝</div>
+            <div class="text">MIS TAREAS ASIGNADAS</div>
+        </div>
+        {% endif %}
+        
+        {% if rol == 'empleado' %}
+<div class="card" onclick="window.location.href='/reportar_incidencia'" style="border-color: #e67e22;">
+    <div class="icon">⚠️</div>
+    <div class="text">REPORTAR INCIDENCIA</div>
+</div>
+{% endif %}
+
+{% if rol == 'dueño' %}
+<div class="card" onclick="window.location.href='/ver_incidencias'" style="border-color: #e67e22;">
+    <div class="icon">⚠️</div>
+    <div class="text">VER INCIDENCIAS</div>
+</div>
+{% endif %}
+
+<div class="card" onclick="window.location.href='/alimentacion'" style="border-color: #2ecc71;">
+    <div class="icon">🌾</div>
+    <div class="text">ALIMENTAR CORRALES</div>
+</div>
+<div class="card" onclick="window.location.href='/salud'" style="border: 1px solid #333; border-top: 4px solid #e74c3c; cursor: pointer; transition: transform 0.2s;">
+    <div class="icon" style="font-size: 2.5em; margin-bottom: 10px; color: #e74c3c;">🏥</div>
+    <div class="text" style="font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: white;">Control de Salud</div>
+    <small style="color: #666; display: block; margin-top: 5px;">Inyecciones e Historial</small>
+</div>
+        <div class="card" onclick="window.location.href='/ventas'" style="border-color: #e74c3c;">
+    <div class="icon">📈</div>
+    <div class="text">REGISTRAR VENTAS</div>
+</div>
+
+    </div>
+    {% if rol == 'dueño' %}
+<div class="card" onclick="window.location.href='/historial_ventas'" style="border-color: #3498db;">
+    <div class="icon">📊</div>
+    <div class="text">HISTORIAL DE VENTAS</div>
+</div>
+{% endif %}
+    {% if rol == 'dueño' %}
+<div class="card" onclick="window.location.href='/finanzas'" style="border-color: #2ecc71;">
+    <div class="icon">📊</div>
+    <div class="text">GASTOS E INVERSIONES</div>
+</div>
+{% endif %}
+
+</body>
+</html>

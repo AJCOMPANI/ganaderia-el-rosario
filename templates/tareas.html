@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tareas - El Rosario</title>
+    <style>
+        body { background: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .tarea-card { background: #111; border: 1px solid #333; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-finish { background: #2ecc71; color: black; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .pendiente { border-left: 5px solid #f1c40f; }
+        .finalizada { border-left: 5px solid #2ecc71; opacity: 0.6; }
+    </style>
+</head>
+<body>
+    <a href="/dashboard" style="color: #aaa;">← Volver</a>
+    <h1>Gestión de Tareas</h1>
+    
+    {% for t in tareas %}
+    <div class="tarea-card {{ t.estado.lower() }}">
+        <div>
+            <strong>{{ t.descripcion }}</strong><br>
+            <small>Estado: {{ t.estado }}</small>
+            {% if session['rol'] == 'dueño' %}<br><small>Asignado a: {{ t.correo }}</small>{% endif %}
+        </div>
+        
+        {% if t.estado == 'PENDIENTE' %}
+        <a href="/tareas/finalizar/{{ t.id }}" class="btn-finish">MARCAR COMO TERMINADA ✓</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <p>No hay tareas pendientes por ahora.</p>
+    {% endfor %}
+</body>
+</html>

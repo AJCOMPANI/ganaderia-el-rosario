@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Salud y Sanidad - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .btn-back { color: #aaa; text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+        .btn-back:hover { color: #2ecc71; }
+        .main-container { display: flex; gap: 30px; align-items: flex-start; }
+        .form-box { background: #111; padding: 25px; border-radius: 12px; border: 1px solid #333; width: 400px; box-sizing: border-box; }
+        h2, h3 { margin-top: 0; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; }
+        label { display: block; margin-top: 15px; font-size: 0.85em; color: #888; font-weight: bold; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
+        .info-card { background: #1a1a1a; border-left: 4px solid #e74c3c; padding: 15px; margin-top: 15px; border-radius: 4px; display: none; font-size: 0.9em; }
+        .btn-inject { background: #e74c3c; color: white; border: none; padding: 14px; width: 100%; margin-top: 20px; font-weight: bold; cursor: pointer; border-radius: 6px; text-transform: uppercase; font-size: 1em; }
+        .btn-inject:hover { background: #c0392b; }
+        .table-box { flex-grow: 1; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 12px; border: 1px solid #222; text-align: left; }
+        th { background: #1a1a1a; color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <a href="/dashboard" class="btn-back">← VOLVER AL PANEL GENERAL</a>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}{% for m in messages %}<div style="background: #1a0a0a; border-left: 5px solid #e74c3c; padding: 15px; margin-bottom: 20px; font-weight: bold;">{{ m }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+
+    <div class="main-container">
+        <div class="form-box">
+            <h2>🏥 Aplicación Clínica</h2>
+            <form action="/salud" method="POST" onsubmit="return confirm('¿Confirmar aplicación de dosis e inyectar al animal?');">
+                
+                <label>1. Seleccionar Ubicación (Corral):</label>
+                <select id="select_corral" onchange="obtenerAretesDinamicos()" required>
+                    <option value="" disabled selected>-- Elija un Corral Activo --</option>
+                    {% for c in corrales %}
+                        <option value="{{ c.id }}">Corral {{ c.id }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>2. Buscar / Seleccionar Arete:</label>
+                <select id="select_arete" name="arete" onchange="evaluarProtocoloVeterinario()" required disabled>
+                    <option value="" disabled selected>-- Seleccione el corral primero --</option>
+                </select>
+
+                <div id="veterinary_guide" class="info-card">
+                    <span style="color: #666; font-size: 0.8em; text-transform: uppercase; font-weight: bold;">Recomendación del Software:</span>
+                    <div id="guia_texto" style="margin-top: 5px; line-height: 1.4;"></div>
+                </div>
+
+               <label>3. Solución / Fármaco a Inyectar:</label>
+<select name="medicamento_id" id="select_med_salud" onchange="verificarOtroSalud()" required>
+    <option value="" disabled selected>-- Seleccione Solución --</option>
+    {% for m in medicamentos %}
+        <option value="{{ m.id }}">{{ m.nombre }} (Stock: {{ m.cantidad_ml }}ml)</option>
+    {% endfor %}
+</select>
+
+<input type="text" name="nombre_extra_salud" id="input_extra_salud" placeholder="Escribe el nombre del nuevo medicamento..." style="display: none; margin-top: 10px; padding: 12px; background: #222; color: white; border: 1px solid #444; width: 100%; box-sizing: border-box; border-radius: 6px;">
+
+<script>
+function verificarOtroSalud() {
+    const select = document.getElementById('select_med_salud');
+    const inputExtra = document.getElementById('input_extra_salud');
+    
+    // Si la opción seleccionada contiene la palabra 'OTRO', se muestra el campo de texto
+    if (select.options[select.selectedIndex].text.includes('OTRO')) {
+        inputExtra.style.display = 'block';
+        inputExtra.required = true;
+    } else {
+        inputExtra.style.display = 'none';
+        inputExtra.required = false;
+    }
+}
+</script>
+
+                <label>4. Dosis de Inyección Metreada (ml):</label>
+                <input type="number" step="0.1" name="dosis_ml" placeholder="Cantidad exacta en mililitros" required>
+
+                <button type="submit" class="btn-inject">💉 REGISTRAR INYECCIÓN Y DESCONTAR</button>
+            </form>
+        </div>
+
+        <div class="table-box">
+            <h3>📋 Registro de Tratamientos Recientes (Sanidad)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Número Arete</th>
+                        <th>Ubicación</th>
+                        <th>Tratamiento Aplicado</th>
+                        <th>Dosis Consumida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in historial %}
+                    <tr>
+                        <td style="color: #666;">{{ h.fecha }}</td>
+                        <td style="color: #2ecc71; font-weight: bold; font-size:1.1em;">{{ h.arete }}</td>
+                        <td>Corral {{ h.corral_id }}</td>
+                        <td style="color: #f1c40f; font-weight:bold;">
+                            {% if h.medicamento_nombre_extra %}
+                                {{ h.medicamento_nombre_extra }} (Externo)
+                            {% else %}
+                                {{ h.medicamento_nombre }}
+                            {% endif %}
+                        </td>                       
+                        <td><b style="color: #3498db;">{{ h.dosis_ml }} ml</b></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #444; font-style: italic;">No se registran tratamientos médicos en el lote el día de hoy.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+let animalesEnMemoria = [];
+
+function obtenerAretesDinamicos() {
+    const cid = document.getElementById('select_corral').value;
+    const selectArete = document.getElementById('select_arete');
+    
+    selectArete.disabled = true;
+    selectArete.innerHTML = '<option value="" disabled selected>Buscando aretes activos...</option>';
+
+    fetch(`/api/animales_por_corral/${cid}`)
+        .then(res => res.json())
+        .then(data => {
+            animalesEnMemoria = data.animales;
+            selectArete.innerHTML = '<option value="" disabled selected>-- Seleccione Arete --</option>';
+            
+            animalesEnMemoria.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.arete;
+                opt.textContent = `${a.arete} (${a.peso} kg - ${a.etapa})`;
+                selectArete.appendChild(opt);
+            });
+            selectArete.disabled = false;
+        });
+}
+
+function evaluarProtocoloVeterinario() {
+    const artSelected = document.getElementById('select_arete').value;
+    const animal = animalesEnMemoria.find(a => a.arete === artSelected);
+    const card = document.getElementById('veterinary_guide');
+    const texto = document.getElementById('guia_texto');
+    
+    if (animal) {
+        card.style.display = 'block';
+        
+        // Protocolo sugerido cruzando los datos automáticos de peso y etapa de tus corrales
+        if (animal.etapa === 'INICIO') {
+            texto.innerHTML = `🐄 Animal en fase de **Recepción** (${animal.peso} kg). Se aconseja aplicar preventivamente <b style="color:#3498db;">IVERMECTINA 1%</b> para limpiar parásitos externos de acarreo.`;
+        } else if (animal.etapa === 'DESARROLLO') {
+            texto.innerHTML = `🐄 Lote en fase de **Crecimiento** (${animal.peso} kg). En caso de signos respiratorios o inflamación por manejo, se sugiere protocolo con <b style="color:#3498db;">CEFTIOFUR 5%</b> o Flunixin.`;
+        } else {
+            texto.innerHTML = `🐄 Lote en fase de **Engorda Terminal** (${animal.peso} kg). Protocolo recomendado: <b style="color:#3498db;">COMPLEJO B + HIERRO</b> vía intramuscular para optimizar la conversión cárnica final.`;
+        }
+    } else {
+        card.style.display = 'none';
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultados de Búsqueda - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .btn-back { color: #2ecc71; text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold; }
+        
+        /* Estilos de la Tabla */
+        table { width: 100%; border-collapse: collapse; background: #111; margin-top: 20px; border: 1px solid #333; }
+        th, td { padding: 15px; border: 1px solid #333; text-align: left; }
+        th { color: #2ecc71; background-color: #1a1a1a; font-size: 1.1em; }
+        tr:hover { background-color: #161616; }
+    </style>
+</head>
+<body>
+    <!-- Enlace para regresar al inventario general -->
+    <a href="/inventario" class="btn-back">← Volver al Inventario</a>
+
+    <h1>Resultados para: "{{ query }}"</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Arete</th>
+                <th>Peso</th>
+                <th>Género</th>
+                <th>Procedencia</th>
+                <th>Corral</th>
+                <th>Precio Compra</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for animal in animales %}
+            <tr>
+                <td>{{ animal.arete }}</td>
+                <td>{{ animal.peso }} kg</td>
+                <td>{{ 'Macho' if animal.genero == 'M' else 'Hembra' }}</td>
+                <td>{{ animal.procedencia }}</td>
+                <td>Corral {{ animal.corral_id }}</td>
+                <!-- Corregido: Aquí mostramos el precio que antes aparecía al final -->
+                <td>${{ animal.precio_actual if animal.precio_actual else '0.0' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center;">No se encontraron animales con ese criterio.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Detalle Corral {{ corral_id }} - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #111; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #333; text-align: left; }
+        th { background: #1a1a1a; color: #2ecc71; }
+        .btn-back { color: #2ecc71; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <a href="/inventario" class="btn-back">← Volver al Inventario</a>
+    <h1>Ganado en Corral {{ corral_id }}</h1>
+
+   <table>
+    <thead>
+        <tr>
+            <th>Arete</th>
+            <th>Peso</th>
+            <th>Género</th>
+            <th>Etapa</th>
+            <th>Procedencia</th>
+            <th>Precio Compra</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for animal in animales %}
+        <tr>
+            <td style="color: #2ecc71; font-weight: bold;">{{ animal.arete }}</td>
+            <td>{{ animal.peso }} kg</td>
+            <td>{{ 'Macho' if animal.genero == 'M' else 'Hembra' }}</td>
+            <td>{{ animal.etapa }}</td>
+            <td>{{ animal.procedencia }}</td>
+            <td style="color: #f1c40f;">
+                ${{ "{:,.2f}".format(animal.precio_actual if animal.precio_actual else 0) }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reportar Incidencia - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 40px auto; background: #111; padding: 30px; border-radius: 15px; border: 1px solid #e67e22; }
+        select, input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
+        .btn-send { background: #e67e22; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 5px; margin-top: 10px; }
+        
+        /* Ocultos inicialmente por CSS */
+        #campo_otro, #seccion_arete { display: none; } 
+        label { color: #888; font-size: 0.9em; margin-top: 10px; display: block; }
+    </style>
+</head>
+<body onload="gestionarCampos()">
+    <div class="container">
+        <a href="/dashboard" style="color: #aaa; text-decoration: none;">← Volver</a>
+        <h2 style="color: #e67e22;">⚠️ Reportar Incidencia</h2>
+        
+        <form action="/reportar_incidencia" method="POST">
+            <label>Tipo de incidencia:</label>
+            <select name="tipo" id="tipo_select" onchange="gestionarCampos()" required>
+                <option value="Animal Enfermo">Animal Enfermo</option>
+                <option value="ANIMAL MUERTO">💀 ANIMAL MUERTO</option>
+                <option value="Cerca Rota">Cerca Rota</option>
+                <option value="Faltante de Insumo">Faltante de Insumo</option>
+                <option value="OTRO">OTRO (Especificar...)</option>
+            </select>
+
+            <div id="seccion_alimento" style="display: none;">
+                <label>Seleccionar Alimento Faltante:</label>
+                <select name="alimento_faltante" id="select_alimento">
+                    {% for item in insumos %}
+                        <option value="{{ item.ingrediente }}">{{ item.ingrediente }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="seccion_arete" style="display: none;">
+                <label>Número de Arete:</label>
+                <input type="text" name="arete" id="input_arete" placeholder="Ej: 4522">
+            </div>
+
+            <input type="text" name="tipo_otro" id="campo_otro" style="display: none;" placeholder="¿Qué problema es?">
+
+            <label>Descripción / Observaciones:</label>
+            <textarea name="descripcion" rows="4" placeholder="Detalles adicionales..." required></textarea>
+            <div id="seccion_costo_daño" style="display: none;">
+            <label style="color: #e74c3c;">💰 Costo económico / Gasto del daño ($):</label>
+            <input type="number" step="0.01" name="costo_reparacion" id="input_costo" placeholder="Ej: 1500.00">
+            </div>
+            <button type="submit" class="btn-send">ENVIAR REPORTE</button>
+        </form>
+    </div>
+
+    <script>
+function gestionarCampos() {
+    const select = document.getElementById('tipo_select');
+    const seccionAlimento = document.getElementById('seccion_alimento');
+    const seccionArete = document.getElementById('seccion_arete');
+    const campoOtro = document.getElementById('campo_otro');
+    const seccionCosto = document.getElementById('seccion_costo_daño'); // Nuevo
+    
+    const inputArete = document.getElementById('input_arete');
+    const inputOtro = document.getElementById('campo_otro');
+    const inputCosto = document.getElementById('input_costo'); // Nuevo
+
+    seccionAlimento.style.display = 'none';
+    seccionArete.style.display = 'none';
+    campoOtro.style.display = 'none';
+    seccionCosto.style.display = 'none'; // Por defecto oculto
+    
+    inputArete.required = false;
+    inputOtro.required = false;
+    inputCosto.required = false;
+
+    if (select.value === 'Faltante de Insumo') {
+        seccionAlimento.style.display = 'block';
+    } 
+    else if (select.value === 'ANIMAL MUERTO' || select.value === 'Animal Enfermo') {
+        seccionArete.style.display = 'block';
+        inputArete.required = true;
+    } 
+    else if (select.value === 'Cerca Rota') {
+        seccionCosto.style.display = 'block';
+        inputCosto.required = true;
+    }
+    else if (select.value === 'OTRO') {
+        campoOtro.style.display = 'block';
+        seccionCosto.style.display = 'block'; // También pide costo si es un imprevisto "Otro"
+        inputOtro.required = true;
+        inputCosto.required = true;
+    }
+}
+</script>
+</body>
+</html>

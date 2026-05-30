@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reportes de Incidencias - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .btn-back { color: #aaa; text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        
+        h1 { color: #e67e22; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        .incidencia-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .tipo-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Colores por tipo */
+        .tipo-animal { background: #c0392b; color: white; }
+        .tipo-cerca { background: #d35400; color: white; }
+        .tipo-insumo { background: #2980b9; color: white; }
+        .tipo-otro { background: #7f8c8d; color: white; }
+
+        .info h3 { margin: 10px 0 5px 0; color: #fff; }
+        .info p { color: #ccc; line-height: 1.4; margin: 5px 0; }
+        .meta { font-size: 0.8em; color: #666; }
+
+        .btn-check {
+            background: transparent;
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.8em;
+            transition: 0.3s;
+        }
+        .btn-check:hover { background: #2ecc71; color: black; }
+        
+        .estado-revisado { opacity: 0.5; border-color: #2ecc71; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard" class="btn-back">← Volver al Panel</a>
+        <h1>⚠️ Control de Incidencias</h1>
+
+        {% for r in reportes %}
+        <div class="incidencia-card {% if r.estado == 'REVISADO' %}estado-revisado{% endif %}">
+            <div class="info">
+                <span class="tipo-badge 
+                    {% if r.tipo == 'Animal Enfermo' %}tipo-animal
+                    {% elif r.tipo == 'Cerca Rota' %}tipo-cerca
+                    {% elif r.tipo == 'Faltante' %}tipo-insumo
+                    {% else %}tipo-otro{% endif %}">
+                    {{ r.tipo }}
+                </span>
+                <h3>{{ r.descripcion }}</h3>
+                <div class="meta">
+                    👤 Reportado por: <strong>{{ r.correo }}</strong><br>
+                    📅 Fecha: {{ r.fecha }}
+                </div>
+            </div>
+
+            <div class="acciones">
+                {% if r.estado == 'PENDIENTE' %}
+                <a href="/incidencia/revisar/{{ r.id }}" class="btn-check">MARCAR COMO REVISADO</a>
+                {% else %}
+                <span style="color: #2ecc71;">✅ Atendido</span>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #444; margin-top: 50px;">No hay incidencias reportadas recientemente.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

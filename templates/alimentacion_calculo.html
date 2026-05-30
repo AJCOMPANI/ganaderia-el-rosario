@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ración Corral {{ corral_id }} - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 700px; margin: auto; }
+        .btn-back { color: #aaa; text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold; }
+        .btn-back:hover { color: #2ecc71; }
+        .resumen-box { background: #111; padding: 20px; border-radius: 10px; border-left: 5px solid #2ecc71; margin-bottom: 30px; display: flex; justify-content: space-between; }
+        table { width: 100%; border-collapse: collapse; background: #111; border-radius: 8px; overflow: hidden; margin-bottom: 25px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; }
+        th { background: #1a1a1a; color: #2ecc71; text-transform: uppercase; font-size: 0.85em; }
+        .kilos-destacados { color: #f1c40f; font-weight: bold; font-size: 1.1em; }
+        
+        /* Estilos del nuevo botón de confirmación */
+        .btn-discount {
+            background-color: #2ecc71;
+            color: black;
+            border: none;
+            padding: 16px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 6px;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+        .btn-discount:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/alimentacion" class="btn-back">← Volver a Corrales</a>
+        <h1>📋 Ración Calculada: Corral {{ corral_id }}</h1>
+
+        <div class="resumen-box">
+            <div>
+                Etapa del Lote: <strong style="color: #2ecc71;">{{ etapa }}</strong><br>
+                Cabezas en Corral: <strong>{{ total_animales }}</strong>
+            </div>
+            <div style="text-align: right;">
+                Peso Total: <strong>{{ peso_total }} kg</strong><br>
+                Total Alimento (3%): <strong style="color: #f1c40f;">{{ consumo_total }} kg</strong>
+            </div>
+        </div>
+
+        <h3>Mezcla Requerida en Báscula:</h3>
+        
+        <form action="/alimentacion/descontar/{{ corral_id }}" method="POST" onsubmit="return confirm('¿Confirmar que la mezcla ya fue servida en comedores? Se descontarán los kilos de la bodega.');">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ingrediente</th>
+                        <th>Porcentaje Dieta</th>
+                        <th>Cantidad a Servir (Kilos)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in alimentos %}
+                    <tr>
+                        <td>
+                            <strong>{{ a.nombre }}</strong>
+                            <input type="hidden" name="ingrediente_nombre[]" value="{{ a.nombre }}">
+                        </td>
+                        <td style="color: #888;">{{ a.porcentaje }}%</td>
+                        <td class="kilos-destacados">
+                            {{ a.kilos }} kg
+                            <input type="hidden" name="ingrediente_kilos[]" value="{{ a.kilos }}">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <button type="submit" class="btn-discount">✔️ Confirmar Servido y Descontar Bodega</button>
+        </form>
+    </div>
+</body>
+</html>

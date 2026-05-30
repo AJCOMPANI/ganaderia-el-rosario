@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Financiera - El Rosario</title>
+    <style>
+        body { 
+            background-color: #000; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            margin: 0;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: auto; 
+        }
+        .btn-back { 
+            color: #aaa; 
+            text-decoration: none; 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        .btn-back:hover { 
+            color: #2ecc71; 
+        }
+        
+        h1 {
+            color: #2ecc71;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        /* Botonera de Filtros Temporales */
+        .tabs-financieras { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 30px; 
+        }
+        .tab-btn { 
+            flex: 1; 
+            padding: 15px; 
+            background: #111; 
+            border: 1px solid #222; 
+            color: #aaa; 
+            text-align: center; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            transition: 0.3s; 
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+        .tab-btn:hover {
+            background: #1c1c1c;
+            color: #fff;
+            border-color: #444;
+        }
+        .tab-btn.active { 
+            background: #2ecc71; 
+            color: black; 
+            border-color: #2ecc71; 
+        }
+
+        /* Cuadrícula de Reportes */
+        .grid-calculadora { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 25px; 
+        }
+        .card-financiera { 
+            background: #111; 
+            border: 1px solid #222; 
+            padding: 25px; 
+            border-radius: 12px;
+            border-left: 5px solid #3498db;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-financiera.perdida {
+            border-left-color: #e74c3c;
+        }
+        .card-financiera.advertencia {
+            border-left-color: #e67e22;
+        }
+        
+        .card-financiera small {
+            font-size: 0.75em;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .monto { 
+            font-size: 2.2em; 
+            font-weight: bold; 
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .card-financiera p {
+            color: #666; 
+            font-size: 0.85em; 
+            margin: 5px 0 0 0;
+            line-height: 1.4;
+        }
+
+        /* Caja de Balance Total Final */
+        .total-box { 
+            grid-column: 1 / -1;
+            background: #161616;
+            border: 1px solid #2ecc71;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .total-box small {
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard" class="btn-back">← Volver al Panel</a>
+        
+        <h1>📊 Calculadora Financiera Inteligente</h1>
+        <p class="subtitle">Análisis del flujo de caja, inversiones de capital y utilidades netas de la Ganadería El Rosario.</p>
+
+        <div class="tabs-financieras">
+            <a href="/finanzas?periodo=dia" class="tab-btn {% if periodo == 'dia' %}active{% endif %}">Hoy</a>
+            <a href="/finanzas?periodo=semana" class="tab-btn {% if periodo == 'semana' %}active{% endif %}">Esta Semana</a>
+            <a href="/finanzas?periodo=mes" class="tab-btn {% if periodo == 'mes' %}active{% endif %}">Este Mes</a>
+            <a href="/finanzas?periodo=ano" class="tab-btn {% if periodo == 'ano' %}active{% endif %}">Este Año</a>
+        </div>
+
+        <div class="grid-calculadora">
+            
+            <div class="card-financiera">
+                <small style="color: #3498db; font-weight: bold;">📦 INVERSIÓN: COMPRA DE GANADO</small>
+                <span class="monto" style="color: #3498db;">${{ "{:,.2f}".format(gasto_animales) }}</span>
+                <p>Erogación destinada a la adquisición de bovinos que actualmente habitan o ingresaron a los corrales en este período.</p>
+            </div>
+
+            <div class="card-financiera perdida">
+                <small style="color: #e74c3c; font-weight: bold;">💀 PÉRDIDAS POR CADÁVERES / BAJAS</small>
+                <span class="monto" style="color: #e74c3c;">${{ "{:,.2f}".format(gasto_muertes) }}</span>
+                <p>Capital hundido e irrecuperable derivado de alertas e incidencias críticas por concepto de animales muertos.</p>
+            </div>
+
+            <div class="card-financiera advertencia">
+                <small style="color: #e67e22; font-weight: bold;">⚠️ GASTOS OPERATIVOS / INCIDENCIAS</small>
+                <span class="monto" style="color: #e67e22;">${{ "{:,.2f}".format(gasto_infraestructura) }}</span>
+                <p>Costos económicos extraordinarios aplicados al mantenimiento logístico (ej. reparación de cercas rotas o imprevistos de infraestructura).</p>
+            </div>
+
+            <div class="card-financiera" style="border-left-color: #9b59b6;">
+                <small style="color: #9b59b6; font-weight: bold;">🌾 INSUMOS DE OPERACIÓN (ALIMENTOS/MEDS)</small>
+                <span class="monto" style="color: #9b59b6;">${{ "{:,.2f}".format(gasto_bodega) }}</span>
+                <p>Costo acumulado reflejado por la compra y reabastecimiento de cargamentos de dietas balanceadas o soluciones sanitarias en la bodega general.</p>
+            </div>
+
+            <div class="card-financiera" style="border-left-color: #2ecc71; background: #091a0f;">
+                <small style="color: #2ecc71; font-weight: bold; text-transform: uppercase;">💰 GANANCIAS EN BRUTO</small>
+                <span class="monto" style="color: #2ecc71;">${{ "{:,.2f}".format(ganancias_bruto) }}</span>
+                <p style="color: #888;">Ingresos financieros totales capturados de manera pura mediante las salidas de ganado (ventas en modalidad Abasto o Lote).</p>
+            </div>
+
+            <div class="card-financiera" style="border-left-color: #3498db; background: #0f172a;">
+                <small style="color: #3498db; font-weight: bold; text-transform: uppercase;">✨ GANANCIAS LIBRES (NETAS)</small>
+                <span class="monto" style="color: #3498db;">${{ "{:,.2f}".format(ganancias_libres) }}</span>
+                <p style="color: #888;">Margen de utilidad neto real del negocio tras sustraer de las ventas brutas todas las inversiones de ganado, gastos e insumos.</p>
+            </div>
+
+            <div class="total-box">
+                <small style="color: #e74c3c; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Erogación Económica Total del Período</small>
+                <div class="monto" style="color: #e74c3c; font-size: 3em; margin: 10px 0 0 0;">${{ "{:,.2f}".format(total_gastos) }}</div>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>

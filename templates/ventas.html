@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Ventas - El Rosario</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 650px; margin: 30px auto; background: #111; padding: 30px; border-radius: 12px; border: 1px solid #2ecc71; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
+        .seccion-venta { display: none; background: #161616; padding: 20px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #2ecc71; }
+        .btn-submit { background: #2ecc71; color: black; border: none; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 6px; font-size: 1.1em; text-transform: uppercase; margin-top: 20px; transition: 0.2s; }
+        .btn-submit:hover { background: #27ae60; }
+        .btn-back { color: #aaa; text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold; }
+        .btn-back:hover { color: #2ecc71; }
+        
+        /* Estilos para el listado de animales en Abasto */
+        .lista-contenedor { max-height: 300px; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 6px; border: 1px solid #333; }
+        .item-animal-abasto { padding: 10px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
+        .item-animal-abasto:hover { background: #222; }
+        .item-animal-abasto input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; }
+        
+        /* Mensajes de Alerta/Flash */
+        .flash-msg { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+        .flash-error { background: #e74c3c; color: white; }
+        .flash-success { background: #2ecc71; color: black; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="/dashboard" class="btn-back">← Volver al Panel</a>
+        
+        <h2 style="color: #2ecc71; text-transform: uppercase; margin-top: 0; letter-spacing: 1px;">💰 Registro de Ventas / Salidas</h2>
+        <p style="color: #888; font-size: 0.9em;">Seleccione la modalidad de salida, especifique el precio pactado por kilogramo y complete la información requerida.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-msg {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
+                  {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="/ventas" method="POST">
+            
+            <label style="color: #aaa; font-size: 0.9em; font-weight: bold;">1. Modalidad de Venta:</label>
+            <select name="selector_modalidad" id="selector_modalidad" onchange="alternarModalidades()" required>
+                <option value="" disabled selected>-- Seleccione una opción --</option>
+                <option value="LOTE">VENTA POR LOTE COMPLETO (CORRAL)</option>
+                <option value="ABASTO">VENTA AL ABASTO (ARETES INDIVIDUALES)</option>
+            </select>
+
+            <label style="color: #aaa; font-size: 0.9em; font-weight: bold;">2. Precio Pactado por Kilo ($/kg):</label>
+            <input type="number" step="0.01" name="precio_kilo" placeholder="Ejemplo: 54.50" required>
+
+            <label style="color: #aaa; font-size: 0.9em; font-weight: bold;">3. Comprador / Cliente:</label>
+            <input type="text" name="comprador" placeholder="Nombre del cliente o rastro" required>
+
+            <div id="bloque_lote" class="seccion-venta">
+                <h3 style="color: #2ecc71; margin-top: 0; font-size: 1.1em;">📋 Datos del Lote (Corral)</h3>
+                
+                <label style="color: #ccc; font-size: 0.85em;">Número de Corral a Vaciar:</label>
+                <input type="number" name="corral_id" id="input_corral_id" placeholder="Ejemplo: 3">
+
+                <label style="color: #ccc; font-size: 0.85em;">Peso Total del Lote en Báscula (kg):</label>
+                <input type="number" step="0.1" name="peso_total" id="input_peso_total" placeholder="Ejemplo: 12450.0">
+            </div>
+
+            <div id="bloque_abasto" class="seccion-venta">
+                <h3 style="color: #2ecc71; margin-top: 0; font-size: 1.1em;">🐄 Selección de Aretes Individuales</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="buscar_arete_abasto" style="color: #2ecc71; font-size: 0.85em; font-weight: bold; display: block; margin-bottom: 5px;">🔍 Filtrar por Arete:</label>
+                    <input type="text" id="buscar_arete_abasto" placeholder="Escribe el número de arete para buscar..." 
+                           style="background: #222; border: 1px solid #2ecc71; color: white; padding: 10px; width: 100%; border-radius: 6px;">
+                </div>
+
+                <label style="color: #ccc; font-size: 0.85em; display: block; margin-bottom: 8px;">Seleccione los animales vendidos:</label>
+                
+                <div id="lista_animales_abasto" class="lista-contenedor">
+                    {% for animal in animales %}
+                    <div class="item-animal-abasto" data-arete="{{ animal.arete }}">
+                        <input type="checkbox" name="aretes_abasto" value="{{ animal.arete }}">
+                        <span><strong>{{ animal.arete }}</strong> (Corral {{ animal.corral_id }} | {{ animal.peso }} kg)</span>
+                    </div>
+                    {% else %}
+                    <p style="color: #666; font-style: italic; padding: 10px; margin: 0; text-align: center;">No hay animales en corrales catalogados como ABASTO actualmente.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Confirmar y Registrar Salida</button>
+        </form>
+    </div>
+
+    <script>
+    // Función para mostrar/ocultar dinámicamente los campos según el modo
+    function alternarModalidades() {
+        const modo = document.getElementById('selector_modalidad').value;
+        const bLote = document.getElementById('bloque_lote');
+        const bAbasto = document.getElementById('bloque_abasto');
+        
+        const inputCorral = document.getElementById('input_corral_id');
+        const inputPeso = document.getElementById('input_peso_total');
+
+        if (modo === 'LOTE') {
+            bLote.style.display = 'block';
+            bAbasto.style.display = 'none';
+            inputCorral.required = true;
+            inputPeso.required = true;
+        } else if (modo === 'ABASTO') {
+            bLote.style.display = 'none';
+            bAbasto.style.display = 'block';
+            inputCorral.required = false;
+            inputPeso.required = false;
+        }
+    }
+
+    // FILTRADO EN TIEMPO REAL PARA EL BUSCADOR DE ABASTO
+    document.getElementById('buscar_arete_abasto').addEventListener('input', function() {
+        const textoBusqueda = this.value.trim().toUpperCase();
+        const filasAnimales = document.querySelectorAll('.item-animal-abasto');
+
+        filasAnimales.forEach(fila => {
+            const numeroArete = fila.getAttribute('data-arete').toUpperCase();
+            
+            // Si el número de arete contiene el patrón escrito, se muestra; de lo contrario se oculta
+            if (numeroArete.includes(textoBusqueda)) {
+                fila.style.display = 'flex';
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+    });
+    </script>
+</body>
+</html>
